@@ -105,19 +105,26 @@ extension ViewController: UIImagePickerControllerDelegate & UINavigationControll
             }
 
             // Try to save transformed document in photos library, and upon completion, delete temporary file at `outputURL`.
-            PHPhotoLibrary.shared().performChanges({
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, fileURL: outputURL, options: nil)
-            }) { (success, error) in
-                // Delete file at temporary location.
-                try? FileManager.default.removeItem(at: outputURL)
+            PHPhotoLibrary.requestAuthorization { (status) in
+                switch status {
+                case .authorized:
+                    PHPhotoLibrary.shared().performChanges({
+                        let request = PHAssetCreationRequest.forAsset()
+                        request.addResource(with: .photo, fileURL: outputURL, options: nil)
+                    }) { (success, error) in
+                        // Delete file at temporary location.
+                        try? FileManager.default.removeItem(at: outputURL)
 
-                DispatchQueue.main.async {
-                    if let error = error {
-                        SVProgressHUD.showError(withStatus: error.localizedDescription)
-                    } else {
-                        SVProgressHUD.showSuccess(withStatus: "Document added to photos album.")
+                        DispatchQueue.main.async {
+                            if let error = error {
+                                SVProgressHUD.showError(withStatus: error.localizedDescription)
+                            } else {
+                                SVProgressHUD.showSuccess(withStatus: "Document added to photos album.")
+                            }
+                        }
                     }
+                default:
+                    break
                 }
             }
         }
