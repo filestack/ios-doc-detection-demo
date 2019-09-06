@@ -27,7 +27,7 @@ final class Processor {
     func process(image: UIImage, maxSize: CGSize, completion: @escaping (_ outputURL: URL?) -> Void) {
         serialQueue.async {
             // Save image into temporary URL location.
-            guard let url = self.saveImageInCachesDirectory(image: image) else {
+            guard let url = self.saveInTemporaryLocation(image: image) else {
                 completion(nil)
                 return
             }
@@ -41,7 +41,7 @@ final class Processor {
             // Remove temporary URLs.
             self.deleteURLs(urls: [url])
 
-            // Setup transform with array of Filestack handles.
+            // Setup transform with Filestack handle.
             let transformable = self.fsClient.transformable(handle: fileLink.handle)
 
             // Add resize transformation.
@@ -94,7 +94,7 @@ final class Processor {
         return fileLink
     }
 
-    private func saveImageInCachesDirectory(image: UIImage) -> URL? {
+    private func saveInTemporaryLocation(image: UIImage) -> URL? {
         guard let imageData = image.jpegData(compressionQuality: 0.85) else { return nil }
 
         let imageURL = temporaryDirectoryURL
